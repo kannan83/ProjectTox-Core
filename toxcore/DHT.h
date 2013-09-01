@@ -100,6 +100,7 @@ typedef struct {
 } DHT;
 /*----------------------------------------------------------------------------------*/
 
+
 Client_data *DHT_get_close_list(DHT *dht);
 
 /* Add a new friend to the friends list.
