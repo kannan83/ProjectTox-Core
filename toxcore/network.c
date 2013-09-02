@@ -23,7 +23,7 @@
 
 #include "network.h"
 
-/* return current UNIX time in microseconds (us). */
+/*  return current UNIX time in microseconds (us). */
 uint64_t current_time(void)
 {
     uint64_t time;
@@ -44,7 +44,7 @@ uint64_t current_time(void)
 #endif
 }
 
-/* return a random number.
+/*  return a random number.
  * NOTE: This function should probably not be used where cryptographic randomness is absolutely necessary.
  */
 uint32_t random_int(void)
@@ -60,9 +60,13 @@ uint32_t random_int(void)
 /* Basic network functions:
  * Function to send packet(data) of length length to ip_port.
  */
+#ifdef WIN32
+int sendpacket(unsigned int sock, IP_Port ip_port, uint8_t *data, uint32_t length)
+#else
 int sendpacket(int sock, IP_Port ip_port, uint8_t *data, uint32_t length)
+#endif
 {
-    ADDR addr = {AF_INET, ip_port.port, ip_port.ip};
+    ADDR addr = {AF_INET, ip_port.port, ip_port.ip, {0}};
     return sendto(sock, (char *) data, length, 0, (struct sockaddr *)&addr, sizeof(addr));
 }
 
@@ -72,7 +76,11 @@ int sendpacket(int sock, IP_Port ip_port, uint8_t *data, uint32_t length)
  *  Packet length is put into length.
  *  Dump all empty packets.
  */
+#ifdef WIN32
+static int receivepacket(unsigned int sock, IP_Port *ip_port, uint8_t *data, uint32_t *length)
+#else
 static int receivepacket(int sock, IP_Port *ip_port, uint8_t *data, uint32_t *length)
+#endif
 {
     ADDR addr;
 #ifdef WIN32
@@ -145,8 +153,8 @@ static void at_shutdown(void)
  * ip must be in network order EX: 127.0.0.1 = (7F000001).
  * port is in host byte order (this means don't worry about it).
  *
- * returns Networking_Core object if no problems
- * returns NULL if there are problems.
+ *  return Networking_Core object if no problems
+ *  return NULL if there are problems.
  */
 Networking_Core *new_networking(IP ip, uint16_t port)
 {
@@ -207,7 +215,7 @@ Networking_Core *new_networking(IP ip, uint16_t port)
 #endif
 
     /* Bind our socket to port PORT and address 0.0.0.0 */
-    ADDR addr = {AF_INET, htons(port), ip};
+    ADDR addr = {AF_INET, htons(port), ip, {0}};
     bind(temp->sock, (struct sockaddr *)&addr, sizeof(addr));
     return temp;
 }

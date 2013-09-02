@@ -120,13 +120,18 @@ typedef struct {
 typedef struct {
     Packet_Handles packethandlers[256];
     /* Our UDP socket. */
+#ifdef WIN32
+    unsigned int sock;
+#else
     int sock;
+#endif
+
 } Networking_Core;
 
-/* return current time in milleseconds since the epoch. */
+/*  return current time in milleseconds since the epoch. */
 uint64_t current_time(void);
 
-/* return a random number.
+/*  return a random number.
  * NOTE: this function should probably not be used where cryptographic randomness is absolutely necessary.
  */
 uint32_t random_int(void);
@@ -134,7 +139,12 @@ uint32_t random_int(void);
 /* Basic network functions: */
 
 /* Function to send packet(data) of length length to ip_port. */
+#ifdef WIN32
+int sendpacket(unsigned int sock, IP_Port ip_port, uint8_t *data, uint32_t length);
+#else
 int sendpacket(int sock, IP_Port ip_port, uint8_t *data, uint32_t length);
+#endif
+
 
 /* Function to call when packet beginning with byte is received. */
 void networking_registerhandler(Networking_Core *net, uint8_t byte, packet_handler_callback cb, void *object);
@@ -143,12 +153,12 @@ void networking_registerhandler(Networking_Core *net, uint8_t byte, packet_handl
 void networking_poll(Networking_Core *net);
 
 /* Initialize networking.
- *  bind to ip and port.
- *  ip must be in network order EX: 127.0.0.1 = (7F000001).
- *  port is in host byte order (this means don't worry about it).
+ * bind to ip and port.
+ * ip must be in network order EX: 127.0.0.1 = (7F000001).
+ * port is in host byte order (this means don't worry about it).
  *
- *  returns 0 if no problems.
- *  returns -1 if there were problems.
+ *  return 0 if no problems.
+ *  return -1 if there were problems.
  */
 Networking_Core *new_networking(IP ip, uint16_t port);
 
